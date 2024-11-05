@@ -68,15 +68,17 @@ public:
         lcp.resize(n);
         
         for(int i = 0; i < n; i++) c[p[i]] = i;
-        
         int k = 0;
-        for(int i = 0; i < n - 1; i++) {
-            if(c[i] == n - 1) continue;
-            int j = p[c[i] + 1];
-            while(i + k < n && j + k < n && s[i + k] == s[j + k]) k++;
-            lcp[c[i]] = k;
-            if(k) k--;
+        for(int i = 0 ; i < n - 1 ; i++){
+            int pi = c[i];
+            int j = p[pi - 1];
+            while(s[i + k] == s[j + k])k++;
+            lcp[pi] = k;
+            k = max(0 , k - 1);
         }
+        // for(int i = 1 ; i < n ; i++){
+        //     debug(i , s.substr(p[i]) ,lcp[i]);
+        // }
     }
     
     int upper_bound(int lo, int hi, string &pat) {
