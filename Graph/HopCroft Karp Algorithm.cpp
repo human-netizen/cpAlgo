@@ -1,75 +1,64 @@
-//O(\sqrt{V}E)
 #include<bits/stdc++.h>
 using namespace std;
 
-const int N = 3e5 + 9;
-
 struct HopcroftKarp {
-  static const int inf = 1e9;
-  int n;
-  vector<int> l, r, d;
-  vector<vector<int>> g;
-  HopcroftKarp(int _n, int _m) {
-    n = _n;
-    int p = _n + _m + 1;
-    g.resize(p);
-    l.resize(p, 0);
-    r.resize(p, 0);
-    d.resize(p, 0);
-  }
-  void add_edge(int u, int v) {
-    g[u].push_back(v + n); //right id is increased by n, so is l[u]
-  }
-  bool bfs() {
-    queue<int> q;
-    for (int u = 1; u <= n; u++) {
-      if (!l[u]) d[u] = 0, q.push(u);
-      else d[u] = inf;
-    }
-    d[0] = inf;
-    while (!q.empty()) {
-      int u = q.front();
-      q.pop();
-      for (auto v : g[u]) {
-        if (d[r[v]] == inf) {
-          d[r[v]] = d[u] + 1;
-          q.push(r[v]);
+    vector<int> g, l, r; int ans;
+    HopcroftKarp(int n, int m, const vector<pair<int,int>> &e)
+    : g(e.size()), l(n, -1), r(m, -1), ans(0) {
+        vector<int> deg(n + 1), a, p, q(n);
+        for (auto &[x, y] : e) deg[x]++;
+        for (int i = 1; i <= n; i++) deg[i] += deg[i - 1];
+        for (auto &[x, y] : e) g[--deg[x]] = y;
+        for (bool match=true; match;) {
+            a.assign(n,-1), p.assign(n,-1); int t=0; match=false;
+            for (int i = 0; i < n; i++)
+                if (l[i] == -1) q[t++] = a[i] = p[i] = i;
+            for (int i = 0; i < t; i++) {
+                int x = q[i];
+                if (~l[a[x]]) continue;
+                for (int j = deg[x]; j < deg[x + 1]; j++) {
+                    int y = g[j];
+                    if (r[y] == -1) {
+                        while (~y) r[y] = x, swap(l[x], y), x = p[x];
+                        match = true; ans++; break;
+                    }
+                    if(p[r[y]]==-1)q[t++]=y=r[y],p[y]=x,a[y]=a[x];
+                }
+            }
         }
-      }
     }
-    return d[0] != inf;
-  }
-  bool dfs(int u) {
-    if (!u) return true;
-    for (auto v : g[u]) {
-      if(d[r[v]] == d[u] + 1 && dfs(r[v])) {
-        l[u] = v;
-        r[v] = u;
-        return true;
-      }
-    }
-    d[u] = inf;
-    return false;
-  }
-  int maximum_matching() {
-    int ans = 0;
-    while (bfs()) {
-      for(int u = 1; u <= n; u++) if (!l[u] && dfs(u)) ans++;
-    }
-    return ans;
-  }
 };
-int32_t main() {
-  ios_base::sync_with_stdio(0);
-  cin.tie(0);
-  int n, m, q;
-  cin >> n >> m >> q;
-  HopcroftKarp M(n, m);
-  while (q--) {
-    int u, v;
-    cin >> u >> v;
-    M.add_edge(u, v);
-  }
-  cout << M.maximum_matching() << '\n';
-  return 0;
+
+void solve(int t){
+    int l,r,m;
+    cin>>l>>r>>m;
+    
+    vector<pair<int,int>> edges;
+    for(int i=0;i<m;i++){
+        int a,b;
+        cin>>a>>b;
+        edges.push_back({a,b});
+    }
+    mt19937 rng(0);
+    shuffle(edges.begin(),edges.end(),rng);
+    
+    HopcroftKarp ds(l,r,edges);
+    cout<<ds.ans<<"\n";
+    for(int i=0;i<l;i++){
+        if(ds.l[i]!=-1){
+            cout<<i<<" "<<ds.l[i]<<"\n";
+            assert(ds.r[ds.l[i]]==i);
+        }
+    }
+}
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    
+    int t=1;
+    //cin>>t;
+    for(int i=1;i<=t;i++)solve(i);
+    
+    return 0;
 }
